@@ -1,6 +1,6 @@
 package com.example.cookingosgame
 
-//manage time-based process state traansition
+//manage time-based process state transition
 //does not assign dish to stove as player does that
 // simulates i/o completion, starvation and queue logic
 
@@ -54,7 +54,7 @@ class Scheduler(
 //        readyQueue.sortBy { it.burstTime }
 //    }
 //
-//    fun sortReadyQueueByPriority() {
-//        readyQueue.sortBy { it.priority }
-//    }
+    fun sortReadyQueueByPriority() {
+        readyQueue.sortBy { it.priority }
+    }
 }

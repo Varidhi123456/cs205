@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.cookingosgame"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.cookingosgame"
@@ -38,6 +38,7 @@ android {
         compose = true
     }
 }
+
 
 dependencies {
 

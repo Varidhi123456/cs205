@@ -2,6 +2,8 @@ package com.example.cookingosgame
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
 import kotlin.concurrent.thread
+import androidx.compose.runtime.mutableStateListOf
+
 
 
 // GameManager handles core logic of our OS cooking simulator:
@@ -17,9 +19,9 @@ import kotlin.concurrent.thread
 //updates scheduler logic as per tick
 class GameManager {
     //queues for dishes (processes)
-    val readyQueue = mutableListOf<DishProcess>()
-    val waitingQueue = mutableListOf<DishProcess>()
-    val completedDishes = mutableListOf<DishProcess>() //this is for when the dish are cooked completely
+    val readyQueue = mutableStateListOf<DishProcess>()
+    val waitingQueue = mutableStateListOf<DishProcess>()
+    val completedDishes = mutableStateListOf<DishProcess>() //this is for when the dish are cooked completely
     private val allDishes = mutableListOf<DishProcess>()
     private var dishIdCounter = 1
     private var ticksPassed = 0                          // track number of update cycles
@@ -50,6 +52,7 @@ class GameManager {
         val names = listOf("Steak", "Soup", "Burger", "Cake", "Curry", "Fish", "Pasta", "Omelette")
         return names.random()
     }
+
     fun updateGameTick(timeDelta: Long) {
         scheduler.update(timeDelta)
         ticksPassed += 1
@@ -102,8 +105,12 @@ class GameManager {
         stove.manuallyRemoveProcess()
     }
 
+    fun sortReadyQueueByPriority() {
+        scheduler.sortReadyQueueByPriority()
+    }
 
-    //close gmae
+
+    //close game
     fun shutdownGame() {
         threadPool.shutdown()
     }
