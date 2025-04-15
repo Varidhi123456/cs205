@@ -75,11 +75,18 @@ fun GameScreen(
                 .matchParentSize()
         )
 
+        Text(
+            text = "  Points (${gameManager.point})",
+            style = MaterialTheme.typography.titleMedium,
+        )
+
         Column(
+
             modifier = modifier
                 .fillMaxSize()
                 .padding(20.dp),
 //            verticalArrangement = Arrangement.spacedBy(16.dp)
+
         ) {
 //        // Game title
 //        Text(
@@ -114,6 +121,7 @@ fun GameScreen(
 //                text = "Stoves (CPU Cores)",
 //                style = MaterialTheme.typography.titleMedium
 //            )
+
 
             // Top Row Padding (Potentially add points count & Pause button)
             Row(

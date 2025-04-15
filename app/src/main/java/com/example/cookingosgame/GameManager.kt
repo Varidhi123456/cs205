@@ -22,9 +22,11 @@ class GameManager {
     val readyQueue = mutableStateListOf<DishProcess>()
     val waitingQueue = mutableStateListOf<DishProcess>()
     val completedDishes = mutableStateListOf<DishProcess>() //this is for when the dish are cooked completely
+    var point = 0// track points
     private val allDishes = mutableListOf<DishProcess>()
     private var dishIdCounter = 1
-    private var ticksPassed = 0                          // track number of update cycles
+    private var ticksPassed = 0
+
 
 
     //shared thread pool for cooking simulation so lets say 4 stove i have 4 worker/chefs
@@ -100,10 +102,12 @@ class GameManager {
         val finishedDish = stove.currentProcess
         if (finishedDish?.state == ProcessState.FINISHED) {
             completedDishes.add(finishedDish)
+            point = point + 100
             println("Dish '${finishedDish.name}' completed and served!")
         }
         if (finishedDish?.state == ProcessState.BURNT) {
             println("Dish '${finishedDish.name}' burnt!")
+            point = point - 200
         }
         stove.manuallyRemoveProcess()
     }
