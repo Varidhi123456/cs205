@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,6 +58,7 @@ fun GameScreen(
 ) {
     var gameTick by remember { mutableStateOf(0) }
     var frameTick by remember { mutableStateOf(0) }
+    var gameEnded by remember { mutableStateOf(false)}
 
     val frameRate = 30 // Target 30 FPS
     val frameDelay = 1000L / frameRate // ~33ms per frame
@@ -78,11 +81,17 @@ fun GameScreen(
     LaunchedEffect(Unit) {
         while(true) {
             delay(1.seconds)
-            gameManager.updateGameTick(1000L, context) // Pass delta time
-            gameTick++ // Trigger recomposition (can also just use rememberUpdatedState if needed)
+            if (gameManager.lives != 0) {
+                gameManager.updateGameTick(1000L, context) // Pass delta time
+                gameTick++ // Trigger recomposition (can also just use rememberUpdatedState if needed)
+            } else {
+                gameEnded = true
+                break
+            }
         }
     }
 
+    //Box container stacks children on top of one another (based on z-order)
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -94,129 +103,156 @@ fun GameScreen(
                 .matchParentSize()
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "   Points: ${gameManager.point}",
-                style = MaterialTheme.typography.titleMedium,
-            )
-
-            Row(
-                modifier = Modifier.padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                repeat(gameManager.lives) {
-                    Image(
-                        painter = painterResource(id = R.drawable.heart3),
-                        contentDescription = "Heart",
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
-
-
+        //parent container that arranges children vertically
         Column(
-
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-//            verticalArrangement = Arrangement.spacedBy(16.dp)
-
         ) {
-//        // Game title
-//        Text(
-//            text = "Cooking OS Simulator",
-//            style = MaterialTheme.typography.headlineMedium,
-//            modifier = Modifier.fillMaxWidth(),
-//            textAlign = TextAlign.Center,
-//            fontWeight = FontWeight.Bold
-//        )
-
-//        // Add sorting controls right below the title
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(bottom = 8.dp),
-//            horizontalArrangement = Arrangement.SpaceEvenly
-//        ) {
-//            // Priority sorting button (lower number = higher priority)
-//            Button(
-//                onClick = { gameManager.sortReadyQueueByPriority() },
-//                modifier = Modifier.weight(1f).padding(end = 4.dp),
-//                colors = ButtonDefaults.buttonColors(
-//                    containerColor = Color(0xFF4CAF50) // Green
-//                )
-//            ) {
-//                Text("Sort by Priority", fontSize = 12.sp)
-//            }
-//        }
-
-            // Stoves section (unchanged)
-//            Text(
-//                text = "Stoves (CPU Cores)",
-//                style = MaterialTheme.typography.titleMedium
-//            )
-
-
-            // Top Row Padding (Potentially add points count & Pause button)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 60.dp)
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text=frameTick.toString()
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(percent = 50))
+                        .background(Color.White)
+                        .padding(vertical = 3.dp, horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "Points: ${gameManager.point}",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
+                Row(
+                    modifier = Modifier,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    repeat(gameManager.lives) {
+                        Image(
+                            painter = painterResource(id = R.drawable.heart3),
+                            contentDescription = "Heart",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
 
-            StovesSection(gameManager)
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+            ) {
+                StovesSection(gameManager)
 
-            // Ready Queue with sorting indicator
+                // Ready Queue with sorting indicator
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(percent = 50))
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(Color.White)
+                            .padding(vertical = 2.dp, horizontal = 16.dp)
+                    ) {
+                        Text(
+                            text = "Order Queue (${gameManager.readyQueue.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                    // Add small visual indicator of current sorting
+//                    Text(
+//                        text = "▲ Priority", // or "▼ Priority" depending on sort
+//                        color = Color.Gray,
+//                        fontSize = 12.sp,
+//                        modifier = Modifier.padding(start = 8.dp)
+//                    )
+                }
+                ReadyQueueSection(gameManager)
+
+//                // Rest remains unchanged
+//                if (gameManager.waitingQueue.isNotEmpty()) {
+//                    Text(
+//                        text = "Waiting Queue (I/O - ${gameManager.waitingQueue.size})",
+//                        style = MaterialTheme.typography.titleMedium
+//                    )
+//                    WaitingQueueSection(gameManager)
+//                }
+//
+//                if (gameManager.completedDishes.isNotEmpty()) {
+//                    Text(
+//                        text = "Completed Dishes (${gameManager.completedDishes.size})",
+//                        style = MaterialTheme.typography.titleMedium
+//                    )
+//                    CompletedDishesSection(gameManager)
+//                }
+//
+//                if (gameManager.burntQueue.isNotEmpty()) {
+//                    Text(
+//                        text = "Burnt Dishes (${gameManager.burntQueue.size}/5)",
+//                        style = MaterialTheme.typography.titleMedium
+//                    )
+//                    BurntQueueSection(gameManager)
+//                }
+            }
+        }
+
+        if (gameEnded) {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha=0.6f))
+            )
+
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Order Queue (${gameManager.readyQueue.size})",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
-                )
-                // Add small visual indicator of current sorting
-                Text(
-                    text = "▲ Priority", // or "▼ Priority" depending on sort
-                    color = Color.Gray,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-            ReadyQueueSection(gameManager)
-
-            // Rest remains unchanged
-            if (gameManager.waitingQueue.isNotEmpty()) {
-                Text(
-                    text = "Waiting Queue (I/O - ${gameManager.waitingQueue.size})",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                WaitingQueueSection(gameManager)
-            }
-
-            if (gameManager.completedDishes.isNotEmpty()) {
-                Text(
-                    text = "Completed Dishes (${gameManager.completedDishes.size})",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                CompletedDishesSection(gameManager)
-            }
-
-            if (gameManager.burntQueue.isNotEmpty()) {
-                Text(
-                    text = "Burnt Dishes (${gameManager.burntQueue.size}/5)",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                BurntQueueSection(gameManager)
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Game Over",
+                            style = MaterialTheme.typography.titleMedium.copy(fontSize = 30.sp),
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Points: ${gameManager.point}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White
+                        )
+                    }
+                    // need to add replay?
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(Color.White)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 12.dp, horizontal = 48.dp)
+                        ) {
+                            Text(
+                                text = "Play Again",
+                                // logic not implemented
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -227,8 +263,10 @@ private fun StovesSection(gameManager: GameManager) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(
+                vertical = 10.dp,
+                horizontal = 80.dp
+            ),
     ) {
         gameManager.stoves.forEach { stove ->
             Box(
@@ -256,50 +294,31 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
 
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .padding(8.dp)
+            .padding(top = 40.dp)
             .clickable(enabled = currentDish?.state == ProcessState.FINISHED || currentDish?.state == ProcessState.BURNT || currentDish?.state == ProcessState.STALE) {
                 gameManager.managePoints(stove)
                 gameManager.removeDishFromStove(stove)
             },
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-//        Text(
-//            text = "Stove ${stove.id + 1}",
-//            fontWeight = FontWeight.Bold
-//        )
-
         Box(
             modifier = Modifier
-                .size(128.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.stove),
                 contentDescription = "Stove",
                 modifier = Modifier
-                    .matchParentSize()
+                    .size(width = 160.dp, height = 110.dp)
             )
         }
 
-
         if (currentDish != null) {
             DishInfo(currentDish)
-            if (currentDish.state == ProcessState.FINISHED) {
-                Text(
-                    text = "Tap to serve",
-                    color = Color.Blue,
-                    fontSize = 12.sp
-                )
-            } else if (currentDish.state == ProcessState.BURNT) {
-                Text(
-                    text = "BURNT!",
-                    color = Color.Red,
-                    fontWeight = FontWeight.Bold
-                )
-            }
         } else {
-            Text("Empty")
+            Text(
+                text = "Empty",
+                color = Color.White,
+            )
         }
     }
 }
@@ -308,12 +327,8 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
 private fun ReadyQueueSection(gameManager: GameManager) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFE3F2FD))
-            .border(1.dp, Color.Blue, RoundedCornerShape(8.dp))
-            .padding(8.dp)
+            .fillMaxSize()
+            .padding(start = 14.dp, top = 10.dp, bottom = 10.dp, end= 0.dp)
     ) {
         if (gameManager.readyQueue.isEmpty()) {
             Text(
@@ -322,9 +337,9 @@ private fun ReadyQueueSection(gameManager: GameManager) {
                 color = Color.Gray
             )
         } else {
-            LazyColumn(
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(gameManager.readyQueue) { dish ->
                     ReadyQueueItem(dish, gameManager)
@@ -337,18 +352,19 @@ private fun ReadyQueueSection(gameManager: GameManager) {
 @Composable
 private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
     val backgroundColor = when (dish.state) {
-        ProcessState.STALE -> Color(0xFFFFF9C4) // Yellow for stale
+        ProcessState.STALE -> Color.LightGray // Yellow for stale
         else -> Color.White
     }
 
-    Row(
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
+            .fillMaxHeight()
+            .width(110.dp)
+            .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
-            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
             .padding(8.dp)
             .clickable {
+                // idk if its better to just make it remove itself automatically
                 if (dish.state == ProcessState.STALE) {
                     gameManager.point -= 50
                     gameManager.readyQueue.remove(dish)
@@ -359,8 +375,6 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
                     gameManager.readyQueue.remove(dish)
                 }
             },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Box(
             modifier = Modifier
@@ -394,145 +408,147 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
     }
 }
 
-@Composable
-private fun WaitingQueueSection(gameManager: GameManager) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFFFF3E0))
-            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
-            .padding(8.dp)
-    ) {
-        if (gameManager.waitingQueue.isEmpty()) {
-            Text(
-                text = "No dishes waiting for I/O",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.Gray
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(gameManager.waitingQueue) { dish ->
-                    WaitingQueueItem(dish)
-                }
-            }
-        }
-    }
-}
+//@Composable
+//private fun WaitingQueueSection(gameManager: GameManager) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(80.dp)
+//            .clip(RoundedCornerShape(8.dp))
+//            .background(Color(0xFFFFF3E0))
+//            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
+//            .padding(8.dp)
+//    ) {
+//        if (gameManager.waitingQueue.isEmpty()) {
+//            Text(
+//                text = "No dishes waiting for I/O",
+//                modifier = Modifier.align(Alignment.Center),
+//                color = Color.Gray
+//            )
+//        } else {
+//            LazyColumn(
+//                modifier = Modifier.fillMaxSize(),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                items(gameManager.waitingQueue) { dish ->
+//                    WaitingQueueItem(dish)
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//private fun WaitingQueueItem(dish: DishProcess) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clip(RoundedCornerShape(4.dp))
+//            .background(Color.White)
+//            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+//            .padding(8.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .size(24.dp)
+//                .clip(CircleShape)
+//                .background(Color(0xFFFFA000))
+//        )
+//        Spacer(modifier = Modifier.width(8.dp))
+//        Text(
+//            text = dish.name,
+//            fontWeight = FontWeight.Bold
+//        )
+//        Spacer(modifier = Modifier.weight(1f))
+//        Text(
+//            text = "I/O: ${dish.ioWaitTime / 1000}s",
+//            fontSize = 12.sp
+//        )
+//    }
+//}
 
-@Composable
-private fun WaitingQueueItem(dish: DishProcess) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color.White)
-            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFFA000))
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = dish.name,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = "I/O: ${dish.ioWaitTime / 1000}s",
-            fontSize = 12.sp
-        )
-    }
-}
+//@Composable
+//private fun CompletedDishesSection(gameManager: GameManager) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(100.dp)
+//            .clip(RoundedCornerShape(8.dp))
+//            .background(Color(0xFFE8F5E9))
+//            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(8.dp))
+//            .padding(8.dp)
+//    ) {
+//        if (gameManager.completedDishes.isEmpty()) {
+//            Text(
+//                text = "No completed dishes yet",
+//                modifier = Modifier.align(Alignment.Center),
+//                color = Color.Gray
+//            )
+//        } else {
+//            LazyColumn(
+//                modifier = Modifier.fillMaxSize(),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                items(gameManager.completedDishes) { dish ->
+//                    CompletedDishItem(dish)
+//                }
+//            }
+//        }
+//    }
+//}
 
-@Composable
-private fun CompletedDishesSection(gameManager: GameManager) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFE8F5E9))
-            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(8.dp))
-            .padding(8.dp)
-    ) {
-        if (gameManager.completedDishes.isEmpty()) {
-            Text(
-                text = "No completed dishes yet",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.Gray
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(gameManager.completedDishes) { dish ->
-                    CompletedDishItem(dish)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CompletedDishItem(dish: DishProcess) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color.White)
-            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(4.dp))
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF4CAF50))
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = dish.name,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF2E7D32)
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = "Completed!",
-            fontSize = 12.sp,
-            color = Color(0xFF2E7D32)
-        )
-    }
-}
+//@Composable
+//private fun CompletedDishItem(dish: DishProcess) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clip(RoundedCornerShape(4.dp))
+//            .background(Color.White)
+//            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(4.dp))
+//            .padding(8.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .size(24.dp)
+//                .clip(CircleShape)
+//                .background(Color(0xFF4CAF50))
+//        )
+//        Spacer(modifier = Modifier.width(8.dp))
+//        Text(
+//            text = dish.name,
+//            fontWeight = FontWeight.Bold,
+//            color = Color(0xFF2E7D32)
+//        )
+//        Spacer(modifier = Modifier.weight(1f))
+//        Text(
+//            text = "Completed!",
+//            fontSize = 12.sp,
+//            color = Color(0xFF2E7D32)
+//        )
+//    }
+//}
 
 @Composable
 private fun DishInfo(dish: DishProcess) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = dish.name,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = when (dish.state) {
-                ProcessState.RUNNING -> "Cooking..."
-                ProcessState.FINISHED -> "Done!"
-                ProcessState.BURNT -> "BURNT!"
-                else -> ""
-            },
-            fontSize = 12.sp
-        )
+    val statusColor = when (dish.state) {
+        ProcessState.RUNNING -> Color(0xFF363636)
+        ProcessState.FINISHED -> Color(0xFF2FC943)
+        ProcessState.BURNT -> Color(0xFFDA120F)
+        else -> Color.Gray
     }
+
+    Text(
+        text = when (dish.state) {
+            ProcessState.RUNNING -> "COOKING..."
+            ProcessState.FINISHED -> "READY!"
+            ProcessState.BURNT -> "BURNT!"
+            else -> ""
+        },
+        fontWeight = FontWeight.Bold,
+        color = statusColor
+    )
 }
 
 private fun colorForPriority(priority: Int): Color {
@@ -545,63 +561,63 @@ private fun colorForPriority(priority: Int): Color {
         else -> Color.Gray
     }
 }
-
-@Composable
-private fun BurntQueueSection(gameManager: GameManager) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFFFF3E0))
-            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
-            .padding(8.dp)
-    ) {
-        if (gameManager.burntQueue.isEmpty()) {
-            Text(
-                text = "No burnt dishes",
-                modifier = Modifier.align(Alignment.Center),
-                color = Color.Gray
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                items(gameManager.burntQueue) { dish ->
-                    BurntItem(dish)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BurntItem(dish: DishProcess) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color.White)
-            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFFA000))
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = dish.name,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = "I/O: ${dish.ioWaitTime / 1000}s",
-            fontSize = 12.sp
-        )
-    }
-}
+//
+//@Composable
+//private fun BurntQueueSection(gameManager: GameManager) {
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(80.dp)
+//            .clip(RoundedCornerShape(8.dp))
+//            .background(Color(0xFFFFF3E0))
+//            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
+//            .padding(8.dp)
+//    ) {
+//        if (gameManager.burntQueue.isEmpty()) {
+//            Text(
+//                text = "No burnt dishes",
+//                modifier = Modifier.align(Alignment.Center),
+//                color = Color.Gray
+//            )
+//        } else {
+//            LazyColumn(
+//                modifier = Modifier.fillMaxSize(),
+//                verticalArrangement = Arrangement.spacedBy(4.dp)
+//            ) {
+//                items(gameManager.burntQueue) { dish ->
+//                    BurntItem(dish)
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//@Composable
+//private fun BurntItem(dish: DishProcess) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clip(RoundedCornerShape(4.dp))
+//            .background(Color.White)
+//            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+//            .padding(8.dp),
+//        verticalAlignment = Alignment.CenterVertically
+//    ) {
+//        Box(
+//            modifier = Modifier
+//                .size(24.dp)
+//                .clip(CircleShape)
+//                .background(Color(0xFFFFA000))
+//        )
+//        Spacer(modifier = Modifier.width(8.dp))
+//        Text(
+//            text = dish.name,
+//            fontWeight = FontWeight.Bold
+//        )
+//        Spacer(modifier = Modifier.weight(1f))
+//        Text(
+//            text = "I/O: ${dish.ioWaitTime / 1000}s",
+//            fontSize = 12.sp
+//        )
+//    }
+//}

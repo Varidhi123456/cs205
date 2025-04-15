@@ -52,7 +52,7 @@ class GameManager {
     }
 
     private fun generateRandomDishName(): String {
-        val names = listOf("Steak", "Soup", "Burger", "Butter Chicken", "Curry", "Fish", "Pasta", "Omelette")
+        val names = listOf("Steak", "Bacon & Eggs", "Grilled Fish", "Pancakes")
         return names.random()
     }
 
@@ -61,9 +61,10 @@ class GameManager {
         ticksPassed += 1
 
         // spawn new dishes more frequently as game progresses (optional)
-        val spawnInterval = 10
+        val spawnInterval = 7
 
-        if (ticksPassed % spawnInterval == 0) {
+        // made maximum number of dishes in ready queue = 10
+        if (ticksPassed % spawnInterval == 0 && readyQueue.size < 10) {
             println("New order incoming!") //debug
             generateNewDish()
         }
@@ -87,6 +88,7 @@ class GameManager {
             }
         }
     }
+
     fun addNewDish(dish: DishProcess) {
         if (dish.ioWaitTime > 0L) {
             dish.state = ProcessState.WAITING
@@ -136,10 +138,10 @@ class GameManager {
             println("Lost a life due to $reason. Lives left: $lives")
         }
 
-        if (lives == 0) {
-            //hello whoeever is doing the terminating screen it should go here
-            shutdownGame()
-        }
+//        if (lives == 0) {
+//            //hello whoeever is doing the terminating screen it should go here
+//            shutdownGame()
+//        }
     }
 
 
