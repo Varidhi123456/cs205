@@ -54,13 +54,29 @@ fun GameScreen(
     modifier: Modifier = Modifier
 ) {
     var gameTick by remember { mutableStateOf(0) }
+    var frameTick by remember { mutableStateOf(0) }
 
-    // Update game every second
+    val frameRate = 30 // Target 30 FPS
+    val frameDelay = 1000L / frameRate // ~33ms per frame
+
+    // Run perpetual loop to update game logic and force UI recomposition
     LaunchedEffect(Unit) {
         while (true) {
+            val frameStart = System.currentTimeMillis()
+
+            frameTick++
+
+            val frameTime = System.currentTimeMillis() - frameStart
+            val sleepTime = frameDelay - frameTime
+            if (sleepTime > 0) delay(sleepTime)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while(true) {
             delay(1.seconds)
-            gameManager.updateGameTick(1000L) // 1 second = 1000ms
-            gameTick++ // Force recomposition
+            gameManager.updateGameTick(1000L) // Pass delta time
+            gameTick++ // Trigger recomposition (can also just use rememberUpdatedState if needed)
         }
     }
 
@@ -147,7 +163,11 @@ fun GameScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 60.dp)
-            ) {}
+            ) {
+                Text(
+                    text=frameTick.toString()
+                )
+            }
 
             StovesSection(gameManager)
 
@@ -186,6 +206,14 @@ fun GameScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 CompletedDishesSection(gameManager)
+            }
+
+            if (gameManager.burntQueue.isNotEmpty()) {
+                Text(
+                    text = "Burnt Dishes (${gameManager.burntQueue.size}/5)",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                BurntQueueSection(gameManager)
             }
         }
     }
@@ -512,5 +540,65 @@ private fun colorForPriority(priority: Int): Color {
         4 -> Color(0xFF66BB6A) // Green
         5 -> Color(0xFF42A5F5) // Blue
         else -> Color.Gray
+    }
+}
+
+@Composable
+private fun BurntQueueSection(gameManager: GameManager) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFFFFF3E0))
+            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        if (gameManager.burntQueue.isEmpty()) {
+            Text(
+                text = "No burnt dishes",
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.Gray
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                items(gameManager.burntQueue) { dish ->
+                    BurntItem(dish)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BurntItem(dish: DishProcess) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(4.dp))
+            .background(Color.White)
+            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFFFA000))
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = dish.name,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Text(
+            text = "I/O: ${dish.ioWaitTime / 1000}s",
+            fontSize = 12.sp
+        )
     }
 }

@@ -21,6 +21,7 @@ class GameManager {
     //queues for dishes (processes)
     val readyQueue = mutableStateListOf<DishProcess>()
     val waitingQueue = mutableStateListOf<DishProcess>()
+    val burntQueue = mutableStateListOf<DishProcess>()
     val completedDishes = mutableStateListOf<DishProcess>() //this is for when the dish are cooked completely
     var point = 0// track points
     var lives = 5 // initial lives
@@ -106,6 +107,7 @@ class GameManager {
             println("Dish '${finishedDish.name}' completed and served!")
         }
         if (finishedDish?.state == ProcessState.BURNT) {
+            burntQueue.add(finishedDish)
             println("Dish '${finishedDish.name}' burnt!")
             loseLife("Burnt")
         }
