@@ -1,10 +1,9 @@
 package com.example.cookingosgame
+import android.content.Context
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
 import kotlin.concurrent.thread
 import androidx.compose.runtime.mutableStateListOf
-
-
 
 // GameManager handles core logic of our OS cooking simulator:
 // - Initializes 4 stoves (threads) and manages dish processes
@@ -23,7 +22,7 @@ class GameManager {
     val waitingQueue = mutableStateListOf<DishProcess>()
     val burntQueue = mutableStateListOf<DishProcess>()
     val completedDishes = mutableStateListOf<DishProcess>() //this is for when the dish are cooked completely
-    var point = 0// track points
+    var point = 0 // track points
     var lives = 5 // initial lives
     private val allDishes = mutableListOf<DishProcess>()
     private var dishIdCounter = 1
@@ -43,7 +42,7 @@ class GameManager {
         val dish = DishProcess(
             id = dishIdCounter++,
             name = generateRandomDishName(),
-            burstTime = (3000L..7000L).random(),             // Simulate 3–7 sec cook
+            burstTime = (3000L..7000L).random(),         // Simulate 3–7 sec cook
             ioWaitTime = listOf(0L, 1000L, 2000L).random(),   // Random I/O wait
             priority = (1..5).random()
         )
@@ -57,7 +56,7 @@ class GameManager {
         return names.random()
     }
 
-    fun updateGameTick(timeDelta: Long) {
+    fun updateGameTick(timeDelta: Long, context: Context) {
         scheduler.update(timeDelta)
         ticksPassed += 1
 
@@ -74,6 +73,12 @@ class GameManager {
             val dish = stove.currentProcess
             if (dish != null && dish.state == ProcessState.FINISHED) {
                 dish.timeSinceFinished += timeDelta
+
+                // Vibrate the device once if the dish is done
+                if (!dish.notified) {
+                    dish.notified = true
+                    VibratorService().vibrate(context)
+                }
 
                 if (dish.timeSinceFinished >= burnThresholdMs) {
                     println("Dish '${dish.name}' was burnt on Stove ${stove.id}!")
@@ -141,7 +146,6 @@ class GameManager {
     fun sortReadyQueueByPriority() {
         scheduler.sortReadyQueueByPriority()
     }
-
 
     //close game
     fun shutdownGame() {

@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -72,10 +73,12 @@ fun GameScreen(
         }
     }
 
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         while(true) {
             delay(1.seconds)
-            gameManager.updateGameTick(1000L) // Pass delta time
+            gameManager.updateGameTick(1000L, context) // Pass delta time
             gameTick++ // Trigger recomposition (can also just use rememberUpdatedState if needed)
         }
     }
@@ -249,7 +252,7 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
 //        else -> Color(0xFFC8E6C9) // Green for cooking
 //    }
 
-    val StoveImage =
+//    val StoveImage =
 
     Column(
         modifier = Modifier

@@ -14,5 +14,6 @@ data class DishProcess(
     var elapsedTime: Long = 0L, // how much time has passed on the stove
     var waitingTime: Long = 0L, // how long in READY/WAITING
     val maxWaitTime: Long = 10000L, // when it turns stale
-    var timeSinceFinished: Long = 0L // Time dish has been waiting after cooking
+    var timeSinceFinished: Long = 0L, // Time dish has been waiting after cooking
+    var notified: Boolean = false // keep track of if the user has already been notified the dish is done
 )
