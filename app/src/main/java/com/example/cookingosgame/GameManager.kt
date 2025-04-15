@@ -118,9 +118,6 @@ class GameManager {
         if (finishedDish?.state == ProcessState.BURNT) {
             point = point - 200
         }
-        if (finishedDish?.state == ProcessState.STALE) {
-            point = point - 50
-        }
 
     }
 
