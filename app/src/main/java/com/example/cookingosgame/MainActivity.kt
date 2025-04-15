@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
@@ -17,6 +18,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.cookingosgame.ui.GameScreen
 import com.example.cookingosgame.ui.theme.CookingOSGameTheme
+import com.example.cookingosgame.ui.theme.LandingPage
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,13 +39,23 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CookingOSGameTheme {
-                val gameManager = remember { GameManager() }
+                // Introduce a boolean state to track whether to show the landing screen.
+                var showLanding by remember { androidx.compose.runtime.mutableStateOf(true) }
 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    GameScreen(
-                        gameManager = gameManager,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                if (showLanding) {
+                    // Show the landing page, and when the user clicks “Start Game”
+                    // it sets the flag to false.
+                    com.example.cookingosgame.ui.theme.LandingPage(onStartGame = { showLanding = false })
+                } else {
+                    // Once the landing page flag is set to false, initialize the game manager
+                    // and show the game screen within your existing Scaffold.
+                    val gameManager = remember { GameManager() }
+                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                        com.example.cookingosgame.ui.GameScreen(
+                            gameManager = gameManager,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                 }
             }
         }
