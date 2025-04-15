@@ -33,7 +33,7 @@ class GameManager {
     val stoves = List(4){id->Stove(id, threadPool)}
     //scheduler track timing logic
     private val scheduler = Scheduler(readyQueue,waitingQueue)
-    private val burnThresholdMs = 5000L
+    private val burnThresholdMs = 10000L
 
     fun generateNewDish(): DishProcess {
         val dish = DishProcess(
@@ -101,6 +101,9 @@ class GameManager {
         if (finishedDish?.state == ProcessState.FINISHED) {
             completedDishes.add(finishedDish)
             println("Dish '${finishedDish.name}' completed and served!")
+        }
+        if (finishedDish?.state == ProcessState.BURNT) {
+            println("Dish '${finishedDish.name}' burnt!")
         }
         stove.manuallyRemoveProcess()
     }

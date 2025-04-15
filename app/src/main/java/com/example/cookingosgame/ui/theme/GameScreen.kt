@@ -200,7 +200,7 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .padding(8.dp)
-            .clickable(enabled = currentDish?.state == ProcessState.FINISHED) {
+            .clickable(enabled = currentDish?.state == ProcessState.FINISHED || currentDish?.state == ProcessState.BURNT) {
                 gameManager.removeDishFromStove(stove)
             },
         horizontalAlignment = Alignment.CenterHorizontally,

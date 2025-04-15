@@ -30,6 +30,9 @@ class Stove(val id: Int, private val threadPool: ExecutorService) {
         if (currentProcess?.state == ProcessState.FINISHED) {
             currentProcess = null
         }
+        if (currentProcess?.state == ProcessState.BURNT) {
+            currentProcess = null
+        }
     }
 
     fun isFree(): Boolean = currentProcess == null
