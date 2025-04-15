@@ -92,7 +92,7 @@ fun GameScreen(
         )
 
         Text(
-            text = "  Points (${gameManager.point})",
+            text = "  Points: ${gameManager.point}",
             style = MaterialTheme.typography.titleMedium,
         )
 
@@ -236,7 +236,7 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .padding(8.dp)
-            .clickable(enabled = currentDish?.state == ProcessState.FINISHED || currentDish?.state == ProcessState.BURNT) {
+            .clickable(enabled = currentDish?.state == ProcessState.FINISHED || currentDish?.state == ProcessState.BURNT || currentDish?.state == ProcessState.STALE) {
                 gameManager.managePoints(stove)
                 gameManager.removeDishFromStove(stove)
             },
@@ -327,9 +327,13 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
             .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
             .padding(8.dp)
             .clickable {
-                // Find first available stove
+                if (dish.state == ProcessState.STALE) {
+                    gameManager.point -= 50
+                    gameManager.readyQueue.remove(dish)
+                } else
                 gameManager.stoves.firstOrNull { it.isFree() }?.let { stove ->
                     gameManager.assignDishToStove(dish, stove)
+                    gameManager.readyQueue.remove(dish)
                 }
             },
         verticalAlignment = Alignment.CenterVertically,
