@@ -102,14 +102,26 @@ class GameManager {
         val finishedDish = stove.currentProcess
         if (finishedDish?.state == ProcessState.FINISHED) {
             completedDishes.add(finishedDish)
-            point = point + 100
             println("Dish '${finishedDish.name}' completed and served!")
         }
         if (finishedDish?.state == ProcessState.BURNT) {
             println("Dish '${finishedDish.name}' burnt!")
-            point = point - 200
         }
         stove.manuallyRemoveProcess()
+    }
+
+    fun managePoints(stove: Stove) {
+        val finishedDish = stove.currentProcess
+        if (finishedDish?.state == ProcessState.FINISHED) {
+            point = point + 100
+        }
+        if (finishedDish?.state == ProcessState.BURNT) {
+            point = point - 200
+        }
+        if (finishedDish?.state == ProcessState.STALE) {
+            point = point - 50
+        }
+
     }
 
     fun sortReadyQueueByPriority() {
