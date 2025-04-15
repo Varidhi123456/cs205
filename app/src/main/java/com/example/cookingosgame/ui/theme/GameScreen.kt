@@ -1,5 +1,6 @@
 package com.example.cookingosgame.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import com.example.cookingosgame.DishProcess
 import com.example.cookingosgame.GameManager
 import com.example.cookingosgame.ProcessState
+import com.example.cookingosgame.R
 import com.example.cookingosgame.Stove
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
@@ -62,82 +64,102 @@ fun GameScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Game title
-        Text(
-            text = "Cooking OS Simulator",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold
-        )
-
-        // Add sorting controls right below the title
-        Row(
+        Image(
+            painter = painterResource(id = R.drawable.background),
+            contentDescription = "Background",
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            // Priority sorting button (lower number = higher priority)
-            Button(
-                onClick = { gameManager.sortReadyQueueByPriority() },
-                modifier = Modifier.weight(1f).padding(end = 4.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4CAF50) // Green
-                )
-            ) {
-                Text("Sort by Priority", fontSize = 12.sp)
-            }
-        }
-
-        // Stoves section (unchanged)
-        Text(
-            text = "Stoves (CPU Cores)",
-            style = MaterialTheme.typography.titleMedium
+                .matchParentSize()
         )
-        StovesSection(gameManager)
 
-        // Ready Queue with sorting indicator
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(20.dp),
+//            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "Ready Queue (${gameManager.readyQueue.size})",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f)
-            )
-            // Add small visual indicator of current sorting
-            Text(
-                text = "▲ Priority", // or "▼ Priority" depending on sort
-                color = Color.Gray,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(start = 8.dp)
-            )
-        }
-        ReadyQueueSection(gameManager)
+//        // Game title
+//        Text(
+//            text = "Cooking OS Simulator",
+//            style = MaterialTheme.typography.headlineMedium,
+//            modifier = Modifier.fillMaxWidth(),
+//            textAlign = TextAlign.Center,
+//            fontWeight = FontWeight.Bold
+//        )
 
-        // Rest remains unchanged
-        if (gameManager.waitingQueue.isNotEmpty()) {
-            Text(
-                text = "Waiting Queue (I/O - ${gameManager.waitingQueue.size})",
-                style = MaterialTheme.typography.titleMedium
-            )
-            WaitingQueueSection(gameManager)
-        }
+//        // Add sorting controls right below the title
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(bottom = 8.dp),
+//            horizontalArrangement = Arrangement.SpaceEvenly
+//        ) {
+//            // Priority sorting button (lower number = higher priority)
+//            Button(
+//                onClick = { gameManager.sortReadyQueueByPriority() },
+//                modifier = Modifier.weight(1f).padding(end = 4.dp),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = Color(0xFF4CAF50) // Green
+//                )
+//            ) {
+//                Text("Sort by Priority", fontSize = 12.sp)
+//            }
+//        }
 
-        if (gameManager.completedDishes.isNotEmpty()) {
-            Text(
-                text = "Completed Dishes (${gameManager.completedDishes.size})",
-                style = MaterialTheme.typography.titleMedium
-            )
-            CompletedDishesSection(gameManager)
+            // Stoves section (unchanged)
+//            Text(
+//                text = "Stoves (CPU Cores)",
+//                style = MaterialTheme.typography.titleMedium
+//            )
+
+            // Top Row Padding (Potentially add points count & Pause button)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 60.dp)
+            ) {}
+
+            StovesSection(gameManager)
+
+            // Ready Queue with sorting indicator
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Order Queue (${gameManager.readyQueue.size})",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+                // Add small visual indicator of current sorting
+                Text(
+                    text = "▲ Priority", // or "▼ Priority" depending on sort
+                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            ReadyQueueSection(gameManager)
+
+            // Rest remains unchanged
+            if (gameManager.waitingQueue.isNotEmpty()) {
+                Text(
+                    text = "Waiting Queue (I/O - ${gameManager.waitingQueue.size})",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                WaitingQueueSection(gameManager)
+            }
+
+            if (gameManager.completedDishes.isNotEmpty()) {
+                Text(
+                    text = "Completed Dishes (${gameManager.completedDishes.size})",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                CompletedDishesSection(gameManager)
+            }
         }
     }
 }
@@ -147,11 +169,17 @@ private fun StovesSection(gameManager: GameManager) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         gameManager.stoves.forEach { stove ->
-            StoveItem(stove, gameManager)
+            Box(
+                modifier = Modifier
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                StoveItem(stove, gameManager)
+            }
         }
     }
 }
@@ -159,18 +187,18 @@ private fun StovesSection(gameManager: GameManager) {
 @Composable
 private fun StoveItem(stove: Stove, gameManager: GameManager) {
     val currentDish = stove.currentProcess
-    val backgroundColor = when {
-        currentDish == null -> Color.LightGray
-        currentDish.state == ProcessState.FINISHED -> Color(0xFFFFCC80) // Orange for finished
-        currentDish.state == ProcessState.BURNT -> Color(0xFFEF9A9A) // Red for burnt
-        else -> Color(0xFFC8E6C9) // Green for cooking
-    }
+//    val backgroundColor = when {
+//        currentDish == null -> Color.LightGray
+//        currentDish.state == ProcessState.FINISHED -> Color(0xFFFFCC80) // Orange for finished
+//        currentDish.state == ProcessState.BURNT -> Color(0xFFEF9A9A) // Red for burnt
+//        else -> Color(0xFFC8E6C9) // Green for cooking
+//    }
+
+    val StoveImage =
 
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .border(1.dp, Color.DarkGray, RoundedCornerShape(8.dp))
             .padding(8.dp)
             .clickable(enabled = currentDish?.state == ProcessState.FINISHED) {
                 gameManager.removeDishFromStove(stove)
@@ -178,10 +206,23 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Stove ${stove.id + 1}",
-            fontWeight = FontWeight.Bold
-        )
+//        Text(
+//            text = "Stove ${stove.id + 1}",
+//            fontWeight = FontWeight.Bold
+//        )
+
+        Box(
+            modifier = Modifier
+                .size(128.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.stove),
+                contentDescription = "Stove",
+                modifier = Modifier
+                    .matchParentSize()
+            )
+        }
+
 
         if (currentDish != null) {
             DishInfo(currentDish)
