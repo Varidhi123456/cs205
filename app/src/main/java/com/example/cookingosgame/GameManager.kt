@@ -49,7 +49,7 @@ class GameManager {
     }
 
     private fun generateRandomDishName(): String {
-        val names = listOf("Steak", "Soup", "Burger", "Cake", "Curry", "Fish", "Pasta", "Omelette")
+        val names = listOf("Steak", "Soup", "Burger", "Butter Chicken", "Curry", "Fish", "Pasta", "Omelette")
         return names.random()
     }
 
