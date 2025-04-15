@@ -23,6 +23,7 @@ class GameManager {
     val waitingQueue = mutableStateListOf<DishProcess>()
     val completedDishes = mutableStateListOf<DishProcess>() //this is for when the dish are cooked completely
     var point = 0// track points
+    var lives = 5 // initial lives
     private val allDishes = mutableListOf<DishProcess>()
     private var dishIdCounter = 1
     private var ticksPassed = 0
@@ -106,6 +107,7 @@ class GameManager {
         }
         if (finishedDish?.state == ProcessState.BURNT) {
             println("Dish '${finishedDish.name}' burnt!")
+            loseLife("Burnt")
         }
         stove.manuallyRemoveProcess()
     }
@@ -120,6 +122,19 @@ class GameManager {
         }
 
     }
+
+    fun loseLife(reason: String) {
+        if (lives > 0) {
+            lives--
+            println("Lost a life due to $reason. Lives left: $lives")
+        }
+
+        if (lives == 0) {
+            //hello whoeever is doing the terminating screen it should go here
+            shutdownGame()
+        }
+    }
+
 
     fun sortReadyQueueByPriority() {
         scheduler.sortReadyQueueByPriority()

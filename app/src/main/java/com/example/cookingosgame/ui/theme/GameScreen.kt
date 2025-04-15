@@ -75,10 +75,29 @@ fun GameScreen(
                 .matchParentSize()
         )
 
-        Text(
-            text = "  Points: ${gameManager.point}",
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "   Points: ${gameManager.point}",
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                repeat(gameManager.lives) {
+                    Image(
+                        painter = painterResource(id = R.drawable.heart3),
+                        contentDescription = "Heart",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
 
         Column(
 
@@ -302,6 +321,7 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
                 if (dish.state == ProcessState.STALE) {
                     gameManager.point -= 50
                     gameManager.readyQueue.remove(dish)
+                    gameManager.loseLife("Stale")
                 } else
                 gameManager.stoves.firstOrNull { it.isFree() }?.let { stove ->
                     gameManager.assignDishToStove(dish, stove)
