@@ -133,7 +133,7 @@ fun GameScreen(
                 ) {
                     repeat(gameManager.lives) {
                         Image(
-                            painter = painterResource(id = R.drawable.heart3),
+                            painter = painterResource(id = R.drawable.heart4),
                             contentDescription = "Heart",
                             modifier = Modifier.size(24.dp)
                         )
