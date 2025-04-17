@@ -2,13 +2,11 @@ package com.example.cookingosgame.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,15 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -283,14 +276,14 @@ private fun StovesSection(gameManager: GameManager) {
 @Composable
 private fun StoveItem(stove: Stove, gameManager: GameManager) {
     val currentDish = stove.currentProcess
-//    val backgroundColor = when {
-//        currentDish == null -> Color.LightGray
-//        currentDish.state == ProcessState.FINISHED -> Color(0xFFFFCC80) // Orange for finished
-//        currentDish.state == ProcessState.BURNT -> Color(0xFFEF9A9A) // Red for burnt
-//        else -> Color(0xFFC8E6C9) // Green for cooking
-//    }
+    val isCooking = currentDish?.state == ProcessState.RUNNING
 
-//    val StoveImage =
+    val statusColor = when (currentDish?.state) {
+        ProcessState.RUNNING -> Color(0xFF363636)
+        ProcessState.FINISHED -> Color(0xFF2FC943)
+        ProcessState.BURNT -> Color(0xFFDA120F)
+        else -> Color.Gray
+    }
 
     Column(
         modifier = Modifier
@@ -303,17 +296,35 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
     ) {
         Box(
             modifier = Modifier
+                .fillMaxWidth()
+                .height(110.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.stove),
-                contentDescription = "Stove",
-                modifier = Modifier
-                    .size(width = 160.dp, height = 110.dp)
-            )
+            if (isCooking) {
+                StoveCookingAnimation(
+                    isCooking = true,
+                    modifier = Modifier.size(width = 160.dp, height = 110.dp),
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.stove),
+                    contentDescription = "Stove",
+                    modifier = Modifier
+                        .size(width = 160.dp, height = 110.dp)
+                )
+            }
         }
 
         if (currentDish != null) {
-            DishInfo(currentDish)
+            Text(
+                text = when (currentDish.state) {
+                    ProcessState.RUNNING -> "COOKING..."
+                    ProcessState.FINISHED -> "READY!"
+                    ProcessState.BURNT -> "BURNT!"
+                    else -> "Empty"
+                },
+                fontWeight = FontWeight.Bold,
+                color = statusColor
+            )
         } else {
             Text(
                 text = "Empty",
@@ -322,6 +333,55 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
         }
     }
 }
+
+@Composable
+fun StoveCookingAnimation(
+    isCooking: Boolean,
+    modifier: Modifier = Modifier,
+    frameDuration: Long = 150L
+) {
+    val frames = listOf(
+        R.drawable.cooking_pancake_frame0,
+        R.drawable.cooking_pancake_frame1,
+        R.drawable.cooking_pancake_frame2,
+        R.drawable.cooking_pancake_frame3,
+        R.drawable.cooking_pancake_frame4,
+        R.drawable.cooking_pancake_frame5
+    )
+
+    var currentFrameIndex by remember { mutableStateOf(0) }
+    var directionForward by remember { mutableStateOf(true) }
+
+    LaunchedEffect(isCooking) {
+        while (isCooking) {
+            delay(frameDuration)
+
+            // Update the frame index with ping-pong logic
+            if (directionForward) {
+                if (currentFrameIndex < frames.lastIndex) {
+                    currentFrameIndex++
+                } else {
+                    directionForward = false
+                    currentFrameIndex--
+                }
+            } else {
+                if (currentFrameIndex > 0) {
+                    currentFrameIndex--
+                } else {
+                    directionForward = true
+                    currentFrameIndex++
+                }
+            }
+        }
+    }
+
+    Image(
+        painter = painterResource(id = frames[currentFrameIndex]),
+        contentDescription = "Cooking Stove Frame",
+        modifier = modifier
+    )
+}
+
 
 @Composable
 private fun ReadyQueueSection(gameManager: GameManager) {
