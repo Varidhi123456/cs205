@@ -4,11 +4,9 @@ import java.util.concurrent.ExecutorService
 class Stove(val id: Int, private val threadPool: ExecutorService) {
 
     //each stove has a unique id and linked to a shared thread pool (where a group of chefs help you cook in a sense)
-
     @Volatile
     var currentProcess: DishProcess? = null
         private set
-
 
     // run one dish process at a time for each stove.
     // when a player 'drops' a dish onto the stove, it starts "cooking" simulating process execution
@@ -55,5 +53,6 @@ class Stove(val id: Int, private val threadPool: ExecutorService) {
             currentProcess = null
         }
     }
+
     fun isFree(): Boolean = currentProcess == null
 }

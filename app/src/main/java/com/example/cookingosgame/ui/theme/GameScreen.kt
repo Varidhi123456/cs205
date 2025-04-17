@@ -63,6 +63,11 @@ fun GameScreen(
 
 
 
+    // Start the game
+    LaunchedEffect(Unit) {
+        gameManager.startRestaurant()
+    }
+
     // Run perpetual loop to update game logic and force UI recomposition
     LaunchedEffect(Unit) {
         while (true) {
@@ -85,6 +90,8 @@ fun GameScreen(
                 gameManager.updateGameTick(1_000L, context)
             } else {
                 gameEnded = true
+                gameManager.customer.stopRunning()
+                gameManager.waiter.stopRunning()
                 break
             }
         }
@@ -417,12 +424,13 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
             .background(backgroundColor)
             .padding(8.dp)
             .clickable {
-                // idk if its better to just make it remove itself automatically
+                // If the dish has turned stale, the user has to click to remove it
                 if (dish.state == ProcessState.STALE) {
                     gameManager.point -= 50
                     gameManager.readyQueue.remove(dish)
                     gameManager.loseLife("Stale")
                 } else
+
                 gameManager.stoves.firstOrNull { it.isFree() }?.let { stove ->
                     gameManager.assignDishToStove(dish, stove)
                     gameManager.readyQueue.remove(dish)

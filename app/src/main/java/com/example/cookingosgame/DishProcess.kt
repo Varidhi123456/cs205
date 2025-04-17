@@ -2,18 +2,16 @@ package com.example.cookingosgame
 
 
 enum class ProcessState {
-    READY, RUNNING, WAITING, STALE, FINISHED, BURNT
+    READY, RUNNING, STALE, FINISHED, BURNT
 }
 data class DishProcess(
-    val id: Int,
+//    val id: Int,
     val name: String,
-    val burstTime: Long,        // total time to cook
-    val ioWaitTime: Long = 0L,  // time spent in I/O (ingredient prep)
+    val burstTime: Long,        // Total time to cook
     val priority: Int = 1,
     var state: ProcessState = ProcessState.READY,
-    var elapsedTime: Long = 0L, // how much time has passed on the stove
-    var waitingTime: Long = 0L, // how long in READY/WAITING
-    val maxWaitTime: Long = 10000L, // when it turns stale
-    var timeSinceFinished: Long = 0L, // Time dish has been waiting after cooking
-    var notified: Boolean = false // keep track of if the user has already been notified the dish is done
+    var waitingTime: Long = 0L, // Total time in READY
+    val maxWaitTime: Long = 10000L, // Time before it turns stale
+    var timeSinceFinished: Long = 0L, // Time dish has been waiting after finish cooking
+    var notified: Boolean = false // Keep track of if the user has already been notified the dish is done
 )

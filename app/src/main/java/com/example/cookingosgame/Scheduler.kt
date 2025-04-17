@@ -5,55 +5,39 @@ package com.example.cookingosgame
 // simulates i/o completion, starvation and queue logic
 
 class Scheduler(
-    private val readyQueue: MutableList<DishProcess>, //process ready to be cooked
-    private val waitingQueue: MutableList<DishProcess> // process waiting for I/O
+    private val readyQueue: MutableList<DishProcess>, // processes ready to be cooked
+    private val stoves: List<Stove> // processes cooking on the stoves
 ) {
-    // this should be called every game tick (e.g., every 16ms or 1s) but im not too sure about this.
-    // your can change it if your wan
+
     fun update(timeDelta: Long) {
-        updateWaitingProcesses(timeDelta)
         updateReadyProcesses(timeDelta)
+        updateStoveProcesses(timeDelta)
     }
-    // update all process in the waiting queue
-    //increase wait itime and check
-    //If i/o time is done move to ready
-    //if waited too long marked them as stale
-    private fun updateWaitingProcesses(timeDelta: Long) {
-        val toReady = mutableListOf<DishProcess>()
 
-        for (process in waitingQueue) {
-            process.waitingTime += timeDelta
-
-            // simulate I/O wait completed and ready to be dragged to the stove
-            if (process.waitingTime >= process.ioWaitTime) {
-                process.state = ProcessState.READY
-                toReady.add(process)
-            } else if (process.waitingTime >= process.maxWaitTime) {
-                process.state = ProcessState.STALE
-            }
-        }
-
-        // move dishes from waiting to ready
-        waitingQueue.removeAll(toReady)
-        readyQueue.addAll(toReady)
-    }
-    //update all process in ready queue
-    //increase waiting time and check for starvation as well?
+    // Update all processes in ready queue
     private fun updateReadyProcesses(timeDelta: Long) {
         for (process in readyQueue) {
             process.waitingTime += timeDelta
 
+            // If the process has been waiting too long, the dish becomes stale
             if (process.waitingTime >= process.maxWaitTime) {
                 process.state = ProcessState.STALE
             }
         }
     }
 
-    //not sure if we want this feature
-//    fun sortReadyQueueBySJF() {
-//        readyQueue.sortBy { it.burstTime }
-//    }
-//
+    // Update all processes on all stoves
+    private fun updateStoveProcesses(timeDelta: Long) {
+
+        for (stove in stoves) {
+            val dish = stove.currentProcess
+            if (dish != null && dish.state == ProcessState.FINISHED) {
+                dish.timeSinceFinished += timeDelta
+
+            }
+        }
+    }
+
     fun sortReadyQueueByPriority() {
         readyQueue.sortBy { it.priority }
     }
