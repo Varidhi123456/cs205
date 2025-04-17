@@ -56,11 +56,8 @@ fun GameScreen(
     var gameEnded by remember { mutableStateOf(false)}
     var sessionId  by remember { mutableStateOf(0) }
 
-
-
     val frameRate = 30 // Target 30 FPS
     val frameDelay = 1000L / frameRate // ~33ms per frame
-
 
 
     // Start the game

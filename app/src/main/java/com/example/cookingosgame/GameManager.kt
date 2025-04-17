@@ -49,13 +49,12 @@ class GameManager {
         burntQueue.clear()
         ticksPassed = 0
         stoves.forEach { it.manuallyRemoveProcess() }
-        customer.startRunning()
-        waiter.startRunning()
+        startRestaurant()
     }
 
     // Start the restaurant logic
     fun startRestaurant() {
-        customer = Customer(orderList, this)
+        customer = Customer(orderList)
         waiter = Waiter(orderList, this)
 
         customer.start()

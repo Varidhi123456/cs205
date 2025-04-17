@@ -12,20 +12,15 @@ class Waiter(
             try {
                 val order = orderList.consume() // Take an order from the queue (blocks if empty)
                 gameManager.readyQueue.add(order) // Add the order to the ready queue
-//                println("Waiter delivered order: ${order.name}")
             } catch (e: InterruptedException) {
                 // Thread was interrupted, time to shut down
                 println("Waiter thread interrupted.")
                 isRunning = false
             }
         }
-//        println("Waiter thread exiting.")
     }
 
     fun stopRunning() {
         isRunning = false
-    }
-    fun startRunning() {
-        isRunning = true
     }
 }
