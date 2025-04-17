@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,9 +54,14 @@ fun GameScreen(
     var gameTick by remember { mutableStateOf(0) }
     var frameTick by remember { mutableStateOf(0) }
     var gameEnded by remember { mutableStateOf(false)}
+    var sessionId  by remember { mutableStateOf(0) }
+
+
 
     val frameRate = 30 // Target 30 FPS
     val frameDelay = 1000L / frameRate // ~33ms per frame
+
+
 
     // Run perpetual loop to update game logic and force UI recomposition
     LaunchedEffect(Unit) {
@@ -71,12 +78,11 @@ fun GameScreen(
 
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        while(true) {
+    LaunchedEffect(sessionId) {
+        while (true) {
             delay(1.seconds)
             if (gameManager.lives != 0) {
-                gameManager.updateGameTick(1000L, context) // Pass delta time
-                gameTick++ // Trigger recomposition (can also just use rememberUpdatedState if needed)
+                gameManager.updateGameTick(1_000L, context)
             } else {
                 gameEnded = true
                 break
@@ -197,59 +203,46 @@ fun GameScreen(
         }
 
         if (gameEnded) {
+            // semi‑transparent full‑screen overlay
             Box(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha=0.6f))
+                    .background(Color.Black.copy(alpha = 0.6f))
             )
 
-            Row(
+            // Centered “Game Over” + score + restart button
+            Column(
                 modifier = Modifier
-                    .fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Game Over",
-                            style = MaterialTheme.typography.titleMedium.copy(fontSize = 30.sp),
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Points: ${gameManager.point}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
-                        )
-                    }
-                    // need to add replay?
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(percent = 50))
-                            .background(Color.White)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .padding(vertical = 12.dp, horizontal = 48.dp)
-                        ) {
-                            Text(
-                                text = "Play Again",
-                                // logic not implemented
-                            )
-                        }
-                    }
+                Text(
+                    text = "Game Over",
+                    fontSize = 30.sp,
+                    color = Color.White
+                )
+                Text(
+                    text = "Points: ${gameManager.point}",
+                    fontSize = 20.sp,
+                    color = Color.White
+                )
+
+                if (gameEnded) {
+                    /* overlay … */
+                    Button(
+                        onClick = {
+                            gameManager.resetGame()
+                            sessionId++
+                            gameEnded = false // hide overlay
+                        },
+                    ) { Text("Play Again") }
+                }
+            }
                 }
             }
         }
-    }
-}
 
 @Composable
 private fun StovesSection(gameManager: GameManager) {

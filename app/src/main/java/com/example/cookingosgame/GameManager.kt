@@ -29,6 +29,19 @@ class GameManager {
     private var ticksPassed = 0
 
 
+    /** reboot everything back to its initial values. */
+    fun resetGame() {
+        point = 0
+        lives = 5
+        readyQueue.clear()
+        waitingQueue.clear()
+        completedDishes.clear()
+        burntQueue.clear()
+        allDishes.clear()
+        ticksPassed = 0
+        dishIdCounter = 1
+        stoves.forEach { it.manuallyRemoveProcess() }
+    }
 
     //shared thread pool for cooking simulation so lets say 4 stove i have 4 worker/chefs
     private val threadPool: ExecutorService = Executors.newFixedThreadPool(4)
