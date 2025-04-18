@@ -1,8 +1,8 @@
 package com.example.cookingosgame
+
 import android.content.Context
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
-import kotlin.concurrent.thread
 import androidx.compose.runtime.mutableStateListOf
 
 // GameManager handles core logic of our OS cooking simulator:

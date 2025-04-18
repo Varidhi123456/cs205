@@ -39,6 +39,7 @@ class Stove(val id: Int, private val threadPool: ExecutorService) {
 
         currentProcess = process //set dish
         process.state = ProcessState.RUNNING //change state
+        process.startTimeMillis = System.currentTimeMillis() //set start time
 
         threadPool.execute {
             simulateCooking(process) // simulate cpu

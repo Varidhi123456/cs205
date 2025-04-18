@@ -12,7 +12,7 @@ class Customer(
             try {
                 // Simulate the time it takes to decide on an order (4-6 seconds)
                 val orderingTime = (4000L..6000L).random()
-                Thread.sleep(orderingTime)
+                sleep(orderingTime)
                 val dish = orderDish()
                 orderList.produce(dish) // Add the order to the queue
             } catch (e: InterruptedException) {

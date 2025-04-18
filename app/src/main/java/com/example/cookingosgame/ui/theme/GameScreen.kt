@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,7 +59,6 @@ fun GameScreen(
 
     val frameRate = 30 // Target 30 FPS
     val frameDelay = 1000L / frameRate // ~33ms per frame
-
 
     // Start the game
     LaunchedEffect(Unit) {
@@ -148,7 +148,7 @@ fun GameScreen(
                 modifier = modifier
                     .fillMaxSize()
             ) {
-                StovesSection(gameManager)
+                StovesSection(gameManager, frameTick)
 
                 // Ready Queue with sorting indicator
                 Row(
@@ -248,8 +248,29 @@ fun GameScreen(
             }
         }
 
+//@Composable
+//private fun StovesSection(gameManager: GameManager) {
+//    Row(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(
+//                vertical = 10.dp,
+//                horizontal = 80.dp
+//            ),
+//    ) {
+//        gameManager.stoves.forEach { stove ->
+//            Box(
+//                modifier = Modifier
+//                    .weight(1f),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                StoveItem(stove, gameManager)
+//            }
+//        }
+//    }
+//}
 @Composable
-private fun StovesSection(gameManager: GameManager) {
+private fun StovesSection(gameManager: GameManager, frameTick: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -259,15 +280,60 @@ private fun StovesSection(gameManager: GameManager) {
             ),
     ) {
         gameManager.stoves.forEach { stove ->
-            Box(
+            Column(
                 modifier = Modifier
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .padding(horizontal = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                StoveItem(stove, gameManager)
+                // The stove visual
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    StoveItem(stove, gameManager)
+                }
+
+                // Progress bar under the stove
+                if (!stove.isFree() && stove.currentProcess!!.state != ProcessState.BURNT) {
+                    stove.currentProcess?.let {
+                        CookingProgressBar(
+                            durationMillis = it.burstTime, // Total cooking duration
+                            startTimeMillis = it.startTimeMillis, // Start of cooking time
+                            frameTick = frameTick,
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                                .fillMaxWidth(0.8f)
+                                .height(6.dp)
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+@Composable
+fun CookingProgressBar(
+    durationMillis: Long,
+    startTimeMillis: Long,
+    frameTick: Int,
+    modifier: Modifier = Modifier
+) {
+    // Use frameTick to trigger recomposition
+    val temp = frameTick
+
+    val currentTime = System.currentTimeMillis()
+    val elapsed = currentTime - startTimeMillis
+    val progress = (elapsed.toFloat() / durationMillis).coerceIn(0f, 1f)
+
+    LinearProgressIndicator(
+        progress = progress,
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.LightGray),
+        color = Color(0xFF4CAF50),
+        trackColor = Color.DarkGray
+    )
 }
 
 @Composable
