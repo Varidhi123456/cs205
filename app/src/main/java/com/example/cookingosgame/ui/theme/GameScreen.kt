@@ -2,15 +2,19 @@ package com.example.cookingosgame.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,13 +29,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,6 +53,7 @@ import com.example.cookingosgame.ProcessState
 import com.example.cookingosgame.R
 import com.example.cookingosgame.Stove
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -52,13 +61,14 @@ fun GameScreen(
     gameManager: GameManager,
     modifier: Modifier = Modifier
 ) {
-    var gameTick by remember { mutableStateOf(0) }
+//    var gameTick by remember { mutableStateOf(0) }
     var frameTick by remember { mutableStateOf(0) }
     var gameEnded by remember { mutableStateOf(false)}
     var sessionId  by remember { mutableStateOf(0) }
 
     val frameRate = 30 // Target 30 FPS
     val frameDelay = 1000L / frameRate // ~33ms per frame
+
 
     // Start the game
     LaunchedEffect(Unit) {
@@ -150,7 +160,6 @@ fun GameScreen(
             ) {
                 StovesSection(gameManager, frameTick)
 
-                // Ready Queue with sorting indicator
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -169,52 +178,20 @@ fun GameScreen(
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
-                    // Add small visual indicator of current sorting
-//                    Text(
-//                        text = "▲ Priority", // or "▼ Priority" depending on sort
-//                        color = Color.Gray,
-//                        fontSize = 12.sp,
-//                        modifier = Modifier.padding(start = 8.dp)
-//                    )
                 }
-                ReadyQueueSection(gameManager)
-
-//                // Rest remains unchanged
-//                if (gameManager.waitingQueue.isNotEmpty()) {
-//                    Text(
-//                        text = "Waiting Queue (I/O - ${gameManager.waitingQueue.size})",
-//                        style = MaterialTheme.typography.titleMedium
-//                    )
-//                    WaitingQueueSection(gameManager)
-//                }
-//
-//                if (gameManager.completedDishes.isNotEmpty()) {
-//                    Text(
-//                        text = "Completed Dishes (${gameManager.completedDishes.size})",
-//                        style = MaterialTheme.typography.titleMedium
-//                    )
-//                    CompletedDishesSection(gameManager)
-//                }
-//
-//                if (gameManager.burntQueue.isNotEmpty()) {
-//                    Text(
-//                        text = "Burnt Dishes (${gameManager.burntQueue.size}/5)",
-//                        style = MaterialTheme.typography.titleMedium
-//                    )
-//                    BurntQueueSection(gameManager)
-//                }
+                ReadyQueueSection(
+                    gameManager
+                )
             }
         }
 
         if (gameEnded) {
-            // semi‑transparent full‑screen overlay
             Box(
                 modifier = modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.6f))
             )
 
-            // Centered “Game Over” + score + restart button
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -234,19 +211,18 @@ fun GameScreen(
                 )
 
                 if (gameEnded) {
-                    /* overlay … */
                     Button(
                         onClick = {
                             gameManager.resetGame()
                             sessionId++
-                            gameEnded = false // hide overlay
+                            gameEnded = false
                         },
                     ) { Text("Play Again") }
                 }
             }
-                }
-            }
         }
+    }
+}
 
 //@Composable
 //private fun StovesSection(gameManager: GameManager) {
@@ -340,6 +316,8 @@ fun CookingProgressBar(
 private fun StoveItem(stove: Stove, gameManager: GameManager) {
     val currentDish = stove.currentProcess
     val isCooking = currentDish?.state == ProcessState.RUNNING
+    val isReady = currentDish?.state == ProcessState.FINISHED
+    val isBurnt = currentDish?.state == ProcessState.BURNT
 
     val statusColor = when (currentDish?.state) {
         ProcessState.RUNNING -> Color(0xFF363636)
@@ -348,10 +326,26 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
         else -> Color.Gray
     }
 
+    val cookedImage = when (currentDish?.name) {
+        "Eggs and Bacon" -> R.drawable.cooked_eggs_and_bacon
+        "Grilled Fish" -> R.drawable.cooked_fish
+        "Pancakes" -> R.drawable.cooked_pancake
+        else -> R.drawable.cooked_steak
+    }
+
+    val burntImage = when (currentDish?.name) {
+        "Eggs and Bacon" -> R.drawable.burnt_eggs_and_bacon
+        "Grilled Fish" -> R.drawable.burnt_fish
+        "Pancakes" -> R.drawable.burnt_pancake
+        else -> R.drawable.burnt_steak
+    }
+
+//    val stoveId = stove.id
+
     Column(
         modifier = Modifier
             .padding(top = 40.dp)
-            .clickable(enabled = currentDish?.state == ProcessState.FINISHED || currentDish?.state == ProcessState.BURNT || currentDish?.state == ProcessState.STALE) {
+            .clickable(enabled = currentDish?.state == ProcessState.FINISHED || currentDish?.state == ProcessState.BURNT) {
                 gameManager.managePoints(stove)
                 gameManager.removeDishFromStove(stove)
             },
@@ -362,10 +356,25 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
                 .fillMaxWidth()
                 .height(110.dp)
         ) {
-            if (isCooking) {
+            if (isCooking && currentDish != null) {
                 StoveCookingAnimation(
                     isCooking = true,
+                    dishName = currentDish.name,
                     modifier = Modifier.size(width = 160.dp, height = 110.dp),
+                )
+            } else if (isReady) {
+                Image(
+                    painter = painterResource(id = cookedImage),
+                    contentDescription = "Stove",
+                    modifier = Modifier
+                        .size(width = 160.dp, height = 110.dp)
+                )
+            } else if (isBurnt) {
+                Image(
+                    painter = painterResource(id = burntImage),
+                    contentDescription = "Stove",
+                    modifier = Modifier
+                        .size(width = 160.dp, height = 110.dp)
                 )
             } else {
                 Image(
@@ -400,17 +409,47 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
 @Composable
 fun StoveCookingAnimation(
     isCooking: Boolean,
+    dishName: String,
     modifier: Modifier = Modifier,
     frameDuration: Long = 150L
 ) {
-    val frames = listOf(
-        R.drawable.cooking_pancake_frame0,
-        R.drawable.cooking_pancake_frame1,
-        R.drawable.cooking_pancake_frame2,
-        R.drawable.cooking_pancake_frame3,
-        R.drawable.cooking_pancake_frame4,
-        R.drawable.cooking_pancake_frame5
-    )
+    val frames = if (dishName == "Eggs and Bacon") {
+        listOf(
+            R.drawable.cooking_eggs_and_bacon_frame0,
+            R.drawable.cooking_eggs_and_bacon_frame1,
+            R.drawable.cooking_eggs_and_bacon_frame2,
+            R.drawable.cooking_eggs_and_bacon_frame3,
+            R.drawable.cooking_eggs_and_bacon_frame4,
+            R.drawable.cooking_eggs_and_bacon_frame5
+        )
+    } else if (dishName == "Grilled Fish") {
+        listOf(
+            R.drawable.cooking_fish_frame0,
+            R.drawable.cooking_fish_frame1,
+            R.drawable.cooking_fish_frame2,
+            R.drawable.cooking_fish_frame3,
+            R.drawable.cooking_fish_frame4,
+            R.drawable.cooking_fish_frame5
+        )
+    } else if (dishName == "Pancakes") {
+        listOf(
+            R.drawable.cooking_pancake_frame0,
+            R.drawable.cooking_pancake_frame1,
+            R.drawable.cooking_pancake_frame2,
+            R.drawable.cooking_pancake_frame3,
+            R.drawable.cooking_pancake_frame4,
+            R.drawable.cooking_pancake_frame5
+        )
+    } else {
+        listOf(
+            R.drawable.cooking_steak_frame0,
+            R.drawable.cooking_steak_frame1,
+            R.drawable.cooking_steak_frame2,
+            R.drawable.cooking_steak_frame3,
+            R.drawable.cooking_steak_frame4,
+            R.drawable.cooking_steak_frame5
+        )
+    }
 
     var currentFrameIndex by remember { mutableStateOf(0) }
     var directionForward by remember { mutableStateOf(true) }
@@ -475,7 +514,7 @@ private fun ReadyQueueSection(gameManager: GameManager) {
 @Composable
 private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
     val backgroundColor = when (dish.state) {
-        ProcessState.STALE -> Color.LightGray // Yellow for stale
+        ProcessState.STALE -> Color(0xFFF18181)
         else -> Color.White
     }
 
@@ -498,15 +537,8 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
                     gameManager.assignDishToStove(dish, stove)
                     gameManager.readyQueue.remove(dish)
                 }
-            },
+            }
     ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape)
-                .background(colorForPriority(dish.priority))
-        )
-
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = dish.name,
@@ -525,154 +557,26 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
             }
         }
 
-        Text(
-            text = "Priority: ${dish.priority}",
-            fontSize = 12.sp
-        )
+        if (dish.state != ProcessState.STALE) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(colorForPriority(dish.priority))
+                )
+                Text(
+                    text = "Priority: ${dish.priority}",
+                    fontSize = 12.sp
+                )
+            }
+        }
     }
-}
-
-//@Composable
-//private fun WaitingQueueSection(gameManager: GameManager) {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(80.dp)
-//            .clip(RoundedCornerShape(8.dp))
-//            .background(Color(0xFFFFF3E0))
-//            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
-//            .padding(8.dp)
-//    ) {
-//        if (gameManager.waitingQueue.isEmpty()) {
-//            Text(
-//                text = "No dishes waiting for I/O",
-//                modifier = Modifier.align(Alignment.Center),
-//                color = Color.Gray
-//            )
-//        } else {
-//            LazyColumn(
-//                modifier = Modifier.fillMaxSize(),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                items(gameManager.waitingQueue) { dish ->
-//                    WaitingQueueItem(dish)
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//private fun WaitingQueueItem(dish: DishProcess) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clip(RoundedCornerShape(4.dp))
-//            .background(Color.White)
-//            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-//            .padding(8.dp),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .size(24.dp)
-//                .clip(CircleShape)
-//                .background(Color(0xFFFFA000))
-//        )
-//        Spacer(modifier = Modifier.width(8.dp))
-//        Text(
-//            text = dish.name,
-//            fontWeight = FontWeight.Bold
-//        )
-//        Spacer(modifier = Modifier.weight(1f))
-//        Text(
-//            text = "I/O: ${dish.ioWaitTime / 1000}s",
-//            fontSize = 12.sp
-//        )
-//    }
-//}
-
-//@Composable
-//private fun CompletedDishesSection(gameManager: GameManager) {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(100.dp)
-//            .clip(RoundedCornerShape(8.dp))
-//            .background(Color(0xFFE8F5E9))
-//            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(8.dp))
-//            .padding(8.dp)
-//    ) {
-//        if (gameManager.completedDishes.isEmpty()) {
-//            Text(
-//                text = "No completed dishes yet",
-//                modifier = Modifier.align(Alignment.Center),
-//                color = Color.Gray
-//            )
-//        } else {
-//            LazyColumn(
-//                modifier = Modifier.fillMaxSize(),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                items(gameManager.completedDishes) { dish ->
-//                    CompletedDishItem(dish)
-//                }
-//            }
-//        }
-//    }
-//}
-
-//@Composable
-//private fun CompletedDishItem(dish: DishProcess) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clip(RoundedCornerShape(4.dp))
-//            .background(Color.White)
-//            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(4.dp))
-//            .padding(8.dp),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .size(24.dp)
-//                .clip(CircleShape)
-//                .background(Color(0xFF4CAF50))
-//        )
-//        Spacer(modifier = Modifier.width(8.dp))
-//        Text(
-//            text = dish.name,
-//            fontWeight = FontWeight.Bold,
-//            color = Color(0xFF2E7D32)
-//        )
-//        Spacer(modifier = Modifier.weight(1f))
-//        Text(
-//            text = "Completed!",
-//            fontSize = 12.sp,
-//            color = Color(0xFF2E7D32)
-//        )
-//    }
-//}
-
-@Composable
-private fun DishInfo(dish: DishProcess) {
-    val statusColor = when (dish.state) {
-        ProcessState.RUNNING -> Color(0xFF363636)
-        ProcessState.FINISHED -> Color(0xFF2FC943)
-        ProcessState.BURNT -> Color(0xFFDA120F)
-        else -> Color.Gray
-    }
-
-    Text(
-        text = when (dish.state) {
-            ProcessState.RUNNING -> "COOKING..."
-            ProcessState.FINISHED -> "READY!"
-            ProcessState.BURNT -> "BURNT!"
-            else -> ""
-        },
-        fontWeight = FontWeight.Bold,
-        color = statusColor
-    )
 }
 
 private fun colorForPriority(priority: Int): Color {
@@ -685,63 +589,3 @@ private fun colorForPriority(priority: Int): Color {
         else -> Color.Gray
     }
 }
-//
-//@Composable
-//private fun BurntQueueSection(gameManager: GameManager) {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(80.dp)
-//            .clip(RoundedCornerShape(8.dp))
-//            .background(Color(0xFFFFF3E0))
-//            .border(1.dp, Color(0xFFFFA000), RoundedCornerShape(8.dp))
-//            .padding(8.dp)
-//    ) {
-//        if (gameManager.burntQueue.isEmpty()) {
-//            Text(
-//                text = "No burnt dishes",
-//                modifier = Modifier.align(Alignment.Center),
-//                color = Color.Gray
-//            )
-//        } else {
-//            LazyColumn(
-//                modifier = Modifier.fillMaxSize(),
-//                verticalArrangement = Arrangement.spacedBy(4.dp)
-//            ) {
-//                items(gameManager.burntQueue) { dish ->
-//                    BurntItem(dish)
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//@Composable
-//private fun BurntItem(dish: DishProcess) {
-//    Row(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .clip(RoundedCornerShape(4.dp))
-//            .background(Color.White)
-//            .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
-//            .padding(8.dp),
-//        verticalAlignment = Alignment.CenterVertically
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .size(24.dp)
-//                .clip(CircleShape)
-//                .background(Color(0xFFFFA000))
-//        )
-//        Spacer(modifier = Modifier.width(8.dp))
-//        Text(
-//            text = dish.name,
-//            fontWeight = FontWeight.Bold
-//        )
-//        Spacer(modifier = Modifier.weight(1f))
-//        Text(
-//            text = "I/O: ${dish.ioWaitTime / 1000}s",
-//            fontSize = 12.sp
-//        )
-//    }
-//}
