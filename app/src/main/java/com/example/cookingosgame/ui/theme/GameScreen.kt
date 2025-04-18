@@ -568,10 +568,10 @@ private fun ReadyQueueItem(dish: DishProcess, gameManager: GameManager) {
                     modifier = Modifier
                         .size(12.dp)
                         .clip(CircleShape)
-                        .background(colorForPriority(dish.priority))
+                        .background(colorForPriority(dish.dishPriority))
                 )
                 Text(
-                    text = "Priority: ${dish.priority}",
+                    text = "Priority: ${dish.dishPriority}",
                     fontSize = 12.sp
                 )
             }

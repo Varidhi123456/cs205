@@ -128,10 +128,6 @@ class GameManager {
 //        }
     }
 
-    fun sortReadyQueueByPriority() {
-        scheduler.sortReadyQueueByPriority()
-    }
-
     //close game
     fun shutdownGame() {
         threadPool.shutdown()

@@ -38,7 +38,4 @@ class Scheduler(
         }
     }
 
-    fun sortReadyQueueByPriority() {
-        readyQueue.sortBy { it.priority }
-    }
 }
