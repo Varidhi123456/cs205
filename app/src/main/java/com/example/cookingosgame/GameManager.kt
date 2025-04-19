@@ -109,10 +109,10 @@ class GameManager {
     fun managePoints(stove: Stove) {
         val finishedDish = stove.currentProcess
         if (finishedDish?.state == ProcessState.FINISHED) {
-            point = point + 100
+            point += 100
         }
         if (finishedDish?.state == ProcessState.BURNT) {
-            point = point - 200
+            point -= 200
         }
     }
 

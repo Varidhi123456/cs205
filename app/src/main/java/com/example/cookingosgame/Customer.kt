@@ -14,8 +14,6 @@ class Customer(
                 val orderingTime = (4000L..6000L).random()
                 sleep(orderingTime)
                 val dish = orderDish()
-                println("dish priority: ${dish.dishPriority}")
-                println("dish wait time: ${dish.maxWaitTime}")
                 orderList.produce(dish) // Add the order to the queue
             } catch (e: InterruptedException) {
                 // Thread was interrupted, time to shut down
@@ -25,6 +23,7 @@ class Customer(
         }
     }
 
+    // Order a random dish from the menu
     private fun orderDish(): DishProcess {
         val dishPriority = (1..5).random()
         val waitTime = generateWaitTime(dishPriority)
@@ -37,6 +36,7 @@ class Customer(
         return dish
     }
 
+    // Generate a random wait time based on the dish's priority
     private fun generateWaitTime(priority: Int): Long {
         return when (priority) {
             1 -> (5000L..6000L).random()

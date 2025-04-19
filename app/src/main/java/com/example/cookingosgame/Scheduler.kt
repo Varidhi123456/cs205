@@ -1,9 +1,6 @@
 package com.example.cookingosgame
 
-//manage time-based process state transition
-//does not assign dish to stove as player does that
-// simulates i/o completion, starvation and queue logic
-
+// Manage time-based process state transition
 class Scheduler(
     private val readyQueue: MutableList<DishProcess>, // processes ready to be cooked
     private val stoves: List<Stove> // processes cooking on the stoves
@@ -33,7 +30,6 @@ class Scheduler(
             val dish = stove.currentProcess
             if (dish != null && dish.state == ProcessState.FINISHED) {
                 dish.timeSinceFinished += timeDelta
-
             }
         }
     }

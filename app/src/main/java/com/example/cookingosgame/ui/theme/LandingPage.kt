@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,8 +24,6 @@ import androidx.compose.ui.unit.sp
 import com.example.cookingosgame.R
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.sp
 
 
 @Composable
@@ -80,7 +77,7 @@ fun LandingPage(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.offset(y = (-50).dp),
                 fontSize = 18.5.sp,
-                color = androidx.compose.ui.graphics.Color.White
+                color = Color.White
             )
 
             Button(

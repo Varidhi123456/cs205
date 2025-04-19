@@ -1,25 +1,19 @@
 package com.example.cookingosgame
 
 import android.os.Bundle
-import android.view.WindowInsets
-import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.cookingosgame.ui.GameScreen
+import com.example.cookingosgame.ui.theme.GameScreen
 import com.example.cookingosgame.ui.theme.CookingOSGameTheme
-import com.example.cookingosgame.ui.theme.LandingPage
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
 
@@ -51,7 +45,7 @@ class MainActivity : ComponentActivity() {
                     // and show the game screen within your existing Scaffold.
                     val gameManager = remember { GameManager() }
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                        com.example.cookingosgame.ui.GameScreen(
+                        GameScreen(
                             gameManager = gameManager,
                             modifier = Modifier.padding(innerPadding)
                         )

@@ -9,11 +9,9 @@ class OrderList<DishProcess>(private val capacity: Int, private val gameManager:
     fun produce(item: DishProcess) {
         synchronized(lock) {
             while (queue.size == capacity) {
-                println("Buffer full, producer waiting...")
                 lock.wait()
             }
             queue.add(item)
-            println("Produced: $item | Buffer: $queue")
             lock.notifyAll()
         }
     }
@@ -22,11 +20,9 @@ class OrderList<DishProcess>(private val capacity: Int, private val gameManager:
     fun consume(): DishProcess {
         synchronized(lock) {
             while (queue.isEmpty() || gameManager.readyQueue.size >= 10) {
-                println("Buffer empty, consumer waiting...")
                 lock.wait()
             }
             val dish = queue.removeAt(0)
-            println("Consumed: $dish | Buffer: $queue")
             lock.notifyAll()
             return dish
         }
