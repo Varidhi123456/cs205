@@ -70,10 +70,11 @@ class GameManager {
             val dish = stove.currentProcess
             if (dish != null && dish.state == ProcessState.FINISHED) {
 
-                // Vibrate the device once if the dish is done
+                // Vibrate the device and play a notification once if the dish is done
                 if (!dish.notified) {
                     dish.notified = true
-                    VibratorService().vibrate(context)
+                    NotifierService().vibrate(context)
+                    NotifierService().playSpecificNotificationSound(context)
                 }
 
                 if (dish.timeSinceFinished >= burnThresholdMs) {
