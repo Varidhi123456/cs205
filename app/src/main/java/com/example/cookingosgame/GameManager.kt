@@ -6,16 +6,11 @@ import java.util.concurrent.ExecutorService
 import androidx.compose.runtime.mutableStateListOf
 
 // GameManager handles core logic of our OS cooking simulator:
-// - Initializes 4 stoves (threads) and manages dish processes
+// - Initializes 4 stoves (threads) in a thread pool and manages dish processes
 // - Simulates I/O wait and starvation using Scheduler
 // - Spawns new dishes every 5 ticks (tick = 1 game second)
 // - Player manually assigns dishes from readyQueue to stoves
 // - Player removes dishes after cooking is finished
-
-//this class would control the main game as i assume
-//what we need to do is track all stove and queues
-// manages cooking via threadpool
-//updates scheduler logic as per tick
 class GameManager {
     //queues for dishes (processes)
     val readyQueue = mutableStateListOf<DishProcess>()
@@ -122,11 +117,6 @@ class GameManager {
             lives--
             println("Lost a life due to $reason. Lives left: $lives")
         }
-
-//        if (lives == 0) {
-//            //hello whoeever is doing the terminating screen it should go here
-//            shutdownGame()
-//        }
     }
 
     //close game
