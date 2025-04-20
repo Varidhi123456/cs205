@@ -1,6 +1,7 @@
 package com.example.cookingosgame.ui.theme
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,7 +32,9 @@ fun LandingPage(
     onStartGame: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier
+        .fillMaxSize()
+    ) {
         // Background image
         Image(
             painter = painterResource(id = R.drawable.landingpage),
@@ -44,12 +47,13 @@ fun LandingPage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Welcome to Cooking OS",
+                modifier = Modifier.padding(top = 20.dp),
+                text = "OS Cooking Simulator",
                 fontSize = 34.sp,
                 fontWeight = FontWeight.Black,
                 style = LocalTextStyle.current.copy(
@@ -60,32 +64,14 @@ fun LandingPage(
                     )
                 ),
                 color = Color.White,
-                modifier = Modifier.offset(y = (-85).dp)
-
-            )
-
-
-            // Optional: Logo image (if needed)
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = "Game Logo",
-                modifier = Modifier.offset(y = (-200).dp)
-            )
-
-            Text(
-                text = "Ready for an immersive cooking challenge?",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.offset(y = (-50).dp),
-                fontSize = 18.5.sp,
-                color = Color.White
             )
 
             Button(
                 onClick = onStartGame,
                 modifier = Modifier
-                    .padding(top = 8.dp)
-                    .width(200.dp)  // Set a fixed width of 200.dp
-                    .height(60.dp), // Set a fixed height of 60.dp
+                    .padding(bottom = 26.dp)
+                    .width(180.dp)  // Set a fixed width of 200.dp
+                    .height(50.dp), // Set a fixed height of 60.dp
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Black,  // Sets the button's background to red
                     contentColor = Color.White   // Sets the text color to white
