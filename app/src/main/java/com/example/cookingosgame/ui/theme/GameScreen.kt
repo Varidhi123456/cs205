@@ -294,14 +294,14 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
     }
 
     val cookedImage = when (currentDish?.name) {
-        "Eggs and Bacon" -> R.drawable.cooked_eggs_and_bacon
+        "Bacon & Eggs" -> R.drawable.cooked_eggs_and_bacon
         "Grilled Fish" -> R.drawable.cooked_fish
         "Pancakes" -> R.drawable.cooked_pancake
         else -> R.drawable.cooked_steak
     }
 
     val burntImage = when (currentDish?.name) {
-        "Eggs and Bacon" -> R.drawable.burnt_eggs_and_bacon
+        "Bacon & Eggs" -> R.drawable.burnt_eggs_and_bacon
         "Grilled Fish" -> R.drawable.burnt_fish
         "Pancakes" -> R.drawable.burnt_pancake
         else -> R.drawable.burnt_steak
@@ -321,10 +321,11 @@ private fun StoveItem(stove: Stove, gameManager: GameManager) {
                 .fillMaxWidth()
                 .height(110.dp)
         ) {
-            if (isCooking && currentDish != null) {
+            if (isCooking) {
+                val dish = currentDish!!
                 StoveCookingAnimation(
                     isCooking = true,
-                    dishName = currentDish.name,
+                    dishName = dish.name,
                     modifier = Modifier.size(width = 160.dp, height = 110.dp),
                 )
             } else if (isReady) {
@@ -378,7 +379,7 @@ fun StoveCookingAnimation(
     modifier: Modifier = Modifier,
     frameDuration: Long = 150L
 ) {
-    val frames = if (dishName == "Eggs and Bacon") {
+    val frames = if (dishName == "Bacon & Eggs") {
         listOf(
             R.drawable.cooking_eggs_and_bacon_frame0,
             R.drawable.cooking_eggs_and_bacon_frame1,
